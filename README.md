@@ -6,8 +6,8 @@ OverView
 == 
 ![overview gif](https://github.com/PandexLee/QWWebViewFullScreenPopGesture/blob/master/QWWebViewFullScreenPopGesture.gif)   
 
-项目中同时用了 forkingdog/FDFullscreenPopGesture 和 WKWebView。  
-WKWebView是自带屏幕边缘滑动返回手势的，所有为了统一交互体验，   
+项目中同时用了 [forkingdog/FDFullscreenPopGesture](https://github.com/forkingdog/FDFullscreenPopGesture) 和 WKWebView。  
+WKWebView是自带屏幕边缘滑动返回手势的，为了统一交互体验，   
 我仿照 FDFullscreenPopGesture 为 WKWebView 写一个支持全屏滑动返回上一个页面的分类。 
 
 Usage
