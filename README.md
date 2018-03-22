@@ -1,5 +1,6 @@
 # QWWebViewFullScreenPopGesture
-An WKWebView's category to enable fullscreen pop gesture in an iOS8+ system style with AOP.
+An WKWebView's category to enable fullscreen pop gesture in an iOS8+ system style with AOP.         
+0代码实现 WKWebView 全屏手势滑动返回
 
 OverView
 == 
@@ -13,9 +14,9 @@ Usage
 ==
 使用时只需要把文件分类加入工程即可，不需要做其他任何操作    
 
-想禁止个别 WKWebView 的手势可直接调用    
+想禁止个别 WKWebView 的手势可直接调用，不需要导入头文件    
 ```
-webView.allowsBackForwardNavigationGestures;
+webView.allowsBackForwardNavigationGestures = NO;
 ```
 
 配合 FDFullscreenPopGesture 使用时要依赖手势  
