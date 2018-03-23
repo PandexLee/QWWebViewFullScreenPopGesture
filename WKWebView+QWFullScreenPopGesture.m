@@ -10,6 +10,7 @@
 #import <objc/runtime.h>
 //#import "NSObject+SXRuntime.h"
 
+
 @interface _QWFullScreenPopGestureDelegate : NSObject <UIGestureRecognizerDelegate>
 
 @property (weak,nonatomic) WKWebView * webView;
@@ -63,7 +64,7 @@
         [self swizzleInstanceMethodWithOriginSel:@selector(loadHTMLString:baseURL:)
                                      swizzledSel:@selector(qw_loadHTMLString:baseURL:)];
         
-        if (DEVICE_iOS_9) {
+        if ([UIDevice currentDevice].systemVersion.floatValue >= 9.0) {
             [self swizzleInstanceMethodWithOriginSel:@selector(loadFileURL:allowingReadAccessToURL:)
                                          swizzledSel:@selector(qw_loadFileURL:allowingReadAccessToURL:)];
             
