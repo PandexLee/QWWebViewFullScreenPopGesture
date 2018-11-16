@@ -2,26 +2,30 @@
 //  WKWebView+QWFullScreenPopGesture.m
 //  ProCalendar
 //
-//  Created by 505 on 2018/3/21.
+//  Created by Pandex on 2018/3/21.
 //  Copyright © 2018年 Quickwis. All rights reserved.
 //
 
 #import "WKWebView+QWFullScreenPopGesture.h"
 #import <objc/runtime.h>
-//#import "NSObject+SXRuntime.h"
-
 
 @interface _QWFullScreenPopGestureDelegate : NSObject <UIGestureRecognizerDelegate>
 
+// 弱引用控件，避免循环引用
 @property (weak,nonatomic) WKWebView * webView;
+@property (weak,nonatomic) UIPanGestureRecognizer * leftGes;
+@property (weak,nonatomic) UIPanGestureRecognizer * rightGes;
 
 @end
 
 @implementation _QWFullScreenPopGestureDelegate
 
 - (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer{
-    //不可返回时忽略
-    if (![self.webView canGoBack]) {
+    //不可返回时忽略左侧手势
+    if (![self.webView canGoBack] && [gestureRecognizer isEqual:self.leftGes]) {
+        return NO;
+    }else if (![self.webView canGoForward] && [gestureRecognizer isEqual:self.rightGes]){
+        //不可前进时忽略右侧手势
         return NO;
     }
     
@@ -36,8 +40,11 @@
     CGFloat absY = fabs(translation.y);
     
     if (absX > absY ) { //水平滑动
-        if (translation.x<0) {
-            //向左滑动
+        if (translation.x < 0 && [gestureRecognizer isEqual:self.leftGes]) {
+            //禁止左侧手势向左滑动
+            return NO;
+        }else if (translation.x > 0 && [gestureRecognizer isEqual:self.rightGes]){
+            //禁止右侧手势向右滑动
             return NO;
         }
     } else if (absX < absY ){//纵向滑动
@@ -64,7 +71,7 @@
         [self swizzleInstanceMethodWithOriginSel:@selector(loadHTMLString:baseURL:)
                                      swizzledSel:@selector(qw_loadHTMLString:baseURL:)];
         
-        if ([UIDevice currentDevice].systemVersion.floatValue >= 9.0) {
+        if (DEVICE_iOS_9) {
             [self swizzleInstanceMethodWithOriginSel:@selector(loadFileURL:allowingReadAccessToURL:)
                                          swizzledSel:@selector(qw_loadFileURL:allowingReadAccessToURL:)];
             
@@ -110,13 +117,14 @@
 
 
 - (void)checkGestureIsAdded{
-    if (![self.gestureRecognizers containsObject:self.qw_fullscreenPopGestureRecognizer]) {
-        
-        //self.gestureRecognizers一共两个手势
-        //firstObject是向右滑动返回的手势(UIScreenEdgePanGesture)，lastObject是向左滑动前进的手势
-        UIPanGestureRecognizer * originEdgeRecognizer = self.gestureRecognizers.firstObject;
-        
-        // Add our own gesture recognizer to where the onboard screen edge pan gesture recognizer is attached to.
+    //self.gestureRecognizers一共两个手势
+    //firstObject是向右滑动返回的手势(UIScreenEdgePanGesture)，lastObject是向左滑动前进的手势
+    //避免后面添加了自定义手势造成顺序问题，先引用自带的两个手势
+    UIPanGestureRecognizer * originEdgeRecognizer = self.gestureRecognizers.firstObject;
+    UIPanGestureRecognizer * originRightEdgeRecognizer = self.gestureRecognizers.lastObject;
+    if (![self.gestureRecognizers containsObject:self.qw_fullscreenPopGestureRecognizer] &&
+        ![self.gestureRecognizers containsObject:self.qw_fullscreenRightPopGestureRecognizer]) {
+        //添加左侧手势
         [originEdgeRecognizer.view addGestureRecognizer:self.qw_fullscreenPopGestureRecognizer];
         
         // Forward the gesture events to the private handler of the onboard gesture recognizer.
@@ -130,10 +138,37 @@
         
         // Disable the onboard gesture recognizer.
         originEdgeRecognizer.enabled = NO;
+        
+        //添加右侧手势
+        [originRightEdgeRecognizer.view addGestureRecognizer:self.qw_fullscreenRightPopGestureRecognizer];
+        
+        // Forward the gesture events to the private handler of the onboard gesture recognizer.
+        NSArray *internalRightTargets = [originRightEdgeRecognizer valueForKey:@"_targets"];
+        id internalRightTarget = [internalRightTargets.firstObject valueForKey:@"target"];
+        SEL internalRightAction = NSSelectorFromString(@"handleNavigationTransition:");
+        if (originRightEdgeRecognizer.delegate) {
+            self.qw_fullscreenRightPopGestureRecognizer.delegate = self.qw_popGestureRecognizerDelegate;
+        }
+        [self.qw_fullscreenRightPopGestureRecognizer addTarget:internalRightTarget action:internalRightAction];
+        
+        // Disable the onboard gesture recognizer.
+        originRightEdgeRecognizer.enabled = NO;
+
     }
 }
 
 - (UIPanGestureRecognizer *)qw_fullscreenPopGestureRecognizer{
+    UIPanGestureRecognizer *panGestureRecognizer = objc_getAssociatedObject(self, _cmd);
+    if (!panGestureRecognizer) {
+        panGestureRecognizer = [[UIPanGestureRecognizer alloc] init];
+        panGestureRecognizer.maximumNumberOfTouches = 1;
+
+        objc_setAssociatedObject(self, _cmd, panGestureRecognizer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return panGestureRecognizer;
+}
+
+- (UIPanGestureRecognizer *)qw_fullscreenRightPopGestureRecognizer{
     UIPanGestureRecognizer *panGestureRecognizer = objc_getAssociatedObject(self, _cmd);
     if (!panGestureRecognizer) {
         panGestureRecognizer = [[UIPanGestureRecognizer alloc] init];
@@ -150,6 +185,8 @@
     if (!delegate) {
         delegate = [[_QWFullScreenPopGestureDelegate alloc] init];
         delegate.webView = self;
+        delegate.leftGes = self.qw_fullscreenPopGestureRecognizer;
+        delegate.rightGes = self.qw_fullscreenRightPopGestureRecognizer;
         objc_setAssociatedObject(self, _cmd, delegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return delegate;
