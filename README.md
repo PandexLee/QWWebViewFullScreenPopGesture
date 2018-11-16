@@ -1,15 +1,15 @@
 # QWWebViewFullScreenPopGesture
-A WKWebView's category to enable fullscreen pop gesture in an iOS8+ system style with AOP.         
-0代码实现 WKWebView 滑动手势全屏返回
+A WKWebView's category to enable fullscreen back/forward gesture in an iOS8+ system style with AOP.         
+0代码实现 WKWebView 滑动手势全屏返回和前进
 
 OverView
 == 
 ![overview gif](https://github.com/PandexLee/QWWebViewFullScreenPopGesture/blob/master/QWWebViewFullScreenPopGesture.gif)   
 
 项目中同时用了 [forkingdog/FDFullscreenPopGesture](https://github.com/forkingdog/FDFullscreenPopGesture) 和 WKWebView。  
-WKWebView是自带屏幕边缘滑动返回手势的，为了统一交互体验，   
+WKWebView是自带屏幕边缘滑动返回/前进手势的，为了统一交互体验，   
 我仿照 FDFullscreenPopGesture 为 WKWebView 写一个支持全屏滑动返回上一个页面的分类。     
-目前只支持全屏右滑返回，因为不需要全屏左滑前进，添加起来也很简单。
+目前默认支持全屏右滑返回和全屏左滑前进
     
     
     
