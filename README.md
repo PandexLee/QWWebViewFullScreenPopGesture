@@ -4,7 +4,7 @@ A WKWebView's category to enable fullscreen back/forward gesture in an iOS8+ sys
 
 OverView
 == 
-![overview gif](https://github.com/PandexLee/QWWebViewFullScreenPopGesture/blob/master/QWWebViewFullScreenPopGesture.gif)   
+![overview gif](https://s19.aconvert.com/convert/p3r68-cdx67/pg1p6-jwsh6.gif)   
 
 项目中同时用了 [forkingdog/FDFullscreenPopGesture](https://github.com/forkingdog/FDFullscreenPopGesture) 和 WKWebView。  
 WKWebView是自带屏幕边缘滑动返回/前进手势的，为了统一交互体验，   
