@@ -11,6 +11,7 @@
 @interface WKWebView (QWFullScreenPopGesture)
 
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *qw_fullscreenPopGestureRecognizer;
+@property (nonatomic, strong, readonly) UIPanGestureRecognizer *qw_fullscreenRightPopGestureRecognizer;
 
 
 @end
